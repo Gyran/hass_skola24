@@ -1,0 +1,49 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Skola24",
+        "description": "Parent account. A device is created for each child.",
+        "data": {
+          "username": "Username",
+          "password": "Password",
+          "host": "Host"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Log in again",
+        "description": "Skola24 rejected the password for {username}. Enter the new one.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Login failed. Check username and password.",
+      "cannot_connect": "Could not reach Skola24."
+    },
+    "abort": {
+      "already_configured": "Account is already configured.",
+      "reauth_successful": "Logged in again."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "message": {
+        "name": "Message"
+      },
+      "ordinary_times": {
+        "name": "Ordinary times"
+      },
+      "exception_times": {
+        "name": "Exception times"
+      }
+    }
+  },
+  "services": {
+    "set_temporary_change_message": {
+      "name": "Write temporary change",
+      "description": "Write a message for one child and one date. An empty date means today, Europe/Stockholm. Clock times stay. overwrite replaces an existing note. Without it, an existing note is left as it is."
+    }
+  }
+}

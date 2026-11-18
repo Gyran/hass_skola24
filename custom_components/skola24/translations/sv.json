@@ -1,0 +1,49 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Skola24",
+        "description": "Vårdnadshavarkonto. En device skapas per barn.",
+        "data": {
+          "username": "Användarnamn",
+          "password": "Lösenord",
+          "host": "Värd"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Logga in igen",
+        "description": "Skola24 godtog inte lösenordet för {username}. Ange det nya.",
+        "data": {
+          "password": "Lösenord"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Inloggningen misslyckades. Kontrollera användarnamn och lösenord.",
+      "cannot_connect": "Nådde inte Skola24."
+    },
+    "abort": {
+      "already_configured": "Kontot är redan tillagt.",
+      "reauth_successful": "Inloggad igen."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "message": {
+        "name": "Meddelande"
+      },
+      "ordinary_times": {
+        "name": "Ordinarie tider"
+      },
+      "exception_times": {
+        "name": "Undantagstider"
+      }
+    }
+  },
+  "services": {
+    "set_temporary_change_message": {
+      "name": "Skriv tillfällig ändring",
+      "description": "Skriv meddelandet för ett barn och ett datum. Tomt datum är idag, Europe/Stockholm. Klockslag rörs inte. overwrite ersätter en lapp som redan finns. Utan den lämnas lappen kvar."
+    }
+  }
+}

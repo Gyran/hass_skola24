@@ -1,0 +1,13 @@
+{
+  "categories": ["productivity_information.calendars_todos"],
+  "codeowners": ["@Gyran"],
+  "config_flow": true,
+  "documentation": "https://github.com/Gyran/hass_skola24",
+  "domain": "skola24",
+  "integration_type": "service",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/Gyran/hass_skola24/issues",
+  "name": "Skola24",
+  "requirements": [],
+  "version": "0.1.0"
+}

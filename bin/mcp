@@ -1,0 +1,10 @@
+#!/bin/sh
+# Cursor: "command": "/Users/gyran/projects/hass_skola24/bin/mcp"
+set -e
+ROOT=$(CDPATH= cd -- "$(dirname -- "$0")/.." && pwd)
+if [ -x "$ROOT/.venv/bin/python" ]; then
+	PY="$ROOT/.venv/bin/python"
+else
+	PY=$(command -v python3)
+fi
+exec "$PY" "$ROOT/server.py"

@@ -1,0 +1,16 @@
+[project]
+name = "skola24"
+version = "0.1.0"
+description = "Skola24 parent client, Home Assistant integration, and stdio MCP"
+requires-python = ">=3.12"
+dependencies = [
+  "httpx>=0.28",
+  "mcp>=1.9",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
