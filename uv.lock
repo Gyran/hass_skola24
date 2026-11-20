@@ -725,7 +725,7 @@ wheels = [
 
 [[package]]
 name = "skola24"
-version = "0.1.2"
+version = "0.2.0"
 source = { virtual = "." }
 dependencies = [
     { name = "httpx" },

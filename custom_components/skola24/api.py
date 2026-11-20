@@ -2,7 +2,8 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
+from datetime import datetime
 
 from .client import Skola24Client
 from .const import EXCEPTION_SCOPE, EXCEPTION_URL, TIMETABLE_SCOPE, VIEWER_URL
@@ -49,6 +50,19 @@ class Lesson:
     details: list[str]
 
 
+def lessons_on(lessons: list[Lesson], date: str) -> list[Lesson]:
+    """Lessons for one YYYY-MM-DD, from a week's lessons."""
+    weekday = datetime.strptime(date, "%Y-%m-%d").isoweekday()
+    return [lesson for lesson in lessons if lesson.day == weekday]
+
+
+def current_lesson(lessons: list[Lesson], hhmm: str) -> tuple[Lesson | None, Lesson | None]:
+    """The lesson running at HH:MM and the next one that starts later."""
+    now = next((l for l in lessons if l.start <= hhmm < l.end), None)
+    upcoming = next((l for l in lessons if l.start > hhmm), None)
+    return now, upcoming
+
+
 @dataclass
 class Timetable:
     child: str
@@ -67,6 +81,7 @@ class ChildDay:
     message: str | None
     exception_times: list[ClockSpan]
     ordinary_times: list[ClockSpan]
+    lessons: list["Lesson"] = field(default_factory=list)
 
 
 @dataclass
@@ -96,8 +111,8 @@ async def today_overview(client: Skola24Client, date: str | None = None) -> list
         found: list[ChildDay] = []
         for student in students:
             school = school_for_student(student, schools)
-            loaded = await _load_day(client, student, school, day)
-            comment, exception_times, ordinary_times = _times_from_raw(loaded.raw)
+            raw = await _load_day(client, student, school, day)
+            comment, exception_times, ordinary_times = _times_from_raw(raw)
             found.append(
                 ChildDay(
                     guid=student.guid,
@@ -139,8 +154,6 @@ async def set_temporary_change_message(
     date: str | None = None,
 ) -> SaveResult:
     text = message.strip()
-    if not text:
-        raise ValueError("Empty message rejected")
     day = date or today_stockholm()
     assert_ymd(day)
     async with client.session():
@@ -170,7 +183,7 @@ async def set_temporary_change_message(
             child=loaded.student.name,
             date=day,
             message=text,
-            confirmation="Tillfällig ändring sparad.",
+            confirmation="Tillfällig ändring sparad." if text else "Meddelandet rensades.",
         )
 
 

@@ -29,38 +29,27 @@
   },
   "entity": {
     "sensor": {
-      "message": {
-        "name": "Message"
-      },
       "ordinary_times": {
         "name": "Ordinary times"
       },
       "exception_times": {
         "name": "Exception times"
+      },
+      "current_lesson": {
+        "name": "Current lesson"
+      },
+      "next_lesson": {
+        "name": "Next lesson"
       }
-    }
-  },
-  "services": {
-    "set_temporary_change_message": {
-      "name": "Write temporary change",
-      "description": "Write a message for one child and one date. An empty date means today, Europe/Stockholm. Clock times stay. overwrite replaces an existing note. Without it, an existing note is left as it is.",
-      "fields": {
-        "device_id": {
-          "name": "Child",
-          "description": "The child's Skola24 device."
-        },
-        "message": {
-          "name": "Message",
-          "description": "The text to put on the day."
-        },
-        "date": {
-          "name": "Date",
-          "description": "YYYY-MM-DD. Empty means today, Europe/Stockholm."
-        },
-        "overwrite": {
-          "name": "Overwrite",
-          "description": "Off by default: an existing note is left as it is. On replaces it."
-        }
+    },
+    "text": {
+      "message": {
+        "name": "Message"
+      }
+    },
+    "button": {
+      "update_data": {
+        "name": "Update data"
       }
     }
   }

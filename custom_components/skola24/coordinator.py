@@ -11,10 +11,11 @@ from homeassistant.exceptions import ConfigEntryAuthFailed
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util.ssl import get_default_context
 
-from .api import ChildDay, today_overview
+from .api import ChildDay, get_timetable, lessons_on, today_overview
 from .auth import AuthError, Credentials
 from .client import Skola24Client
 from .const import DOMAIN
+from .dates import today_stockholm
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -61,4 +62,12 @@ class Skola24Coordinator(DataUpdateCoordinator[dict[str, ChildDay]]):
             raise ConfigEntryAuthFailed(str(err)) from err
         except Exception as err:
             raise UpdateFailed(str(err)) from err
+        today = today_stockholm()
+        for day in days:
+            # The schedule is a bonus. A failure here must not hide the rest.
+            try:
+                week = await get_timetable(self.client, child=day.name, date=today)
+                day.lessons = lessons_on(week.lessons, today)
+            except Exception as err:
+                _LOGGER.debug("No timetable for %s: %s", day.name, err)
         return {day.guid: day for day in days}

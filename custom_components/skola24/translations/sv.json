@@ -29,38 +29,27 @@
   },
   "entity": {
     "sensor": {
-      "message": {
-        "name": "Meddelande"
-      },
       "ordinary_times": {
         "name": "Ordinarie tider"
       },
       "exception_times": {
         "name": "Undantagstider"
+      },
+      "current_lesson": {
+        "name": "Pågående lektion"
+      },
+      "next_lesson": {
+        "name": "Nästa lektion"
       }
-    }
-  },
-  "services": {
-    "set_temporary_change_message": {
-      "name": "Skriv tillfällig ändring",
-      "description": "Skriv meddelandet för ett barn och ett datum. Tomt datum är idag, Europe/Stockholm. Klockslag rörs inte. overwrite ersätter en lapp som redan finns. Utan den lämnas lappen kvar.",
-      "fields": {
-        "device_id": {
-          "name": "Barn",
-          "description": "Barnets Skola24-device."
-        },
-        "message": {
-          "name": "Meddelande",
-          "description": "Texten som ska stå på dagen."
-        },
-        "date": {
-          "name": "Datum",
-          "description": "YYYY-MM-DD. Tomt betyder idag, Europe/Stockholm."
-        },
-        "overwrite": {
-          "name": "Skriv över",
-          "description": "Av är default. En lapp som redan finns lämnas kvar. På ersätter den."
-        }
+    },
+    "text": {
+      "message": {
+        "name": "Meddelande"
+      }
+    },
+    "button": {
+      "update_data": {
+        "name": "Uppdatera data"
       }
     }
   }

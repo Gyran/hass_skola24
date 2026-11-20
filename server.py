@@ -118,7 +118,7 @@ async def set_temporary_change_message_tool(
     message: str,
     date: str | None = None,
 ) -> str:
-    """Tillfällig ändring: send a meddelande to preschool/fritids for one child and one day. Does not change clock times. Overwrites any existing message. date is YYYY-MM-DD, default today. Empty message is rejected."""
+    """Tillfällig ändring: send a meddelande to preschool/fritids for one child and one day. Does not change clock times. Overwrites any existing message. date is YYYY-MM-DD, default today. Empty message clears the day's meddelande."""
     return _dump(
         await set_temporary_change_message(_client_or_create(), child, message, date)
     )

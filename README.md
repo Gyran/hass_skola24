@@ -2,7 +2,7 @@
 
 Vårdnadshavare mot Skola24. Kräver Home Assistant 2026.11.1.
 
-`custom_components/skola24/` är det Marketplace installerar. En device per barn. Tre sensorer: meddelande, ordinarie tider, undantagstider. Servicen `skola24.set_temporary_change_message` tar den devicen, ett meddelande, ett datum och `overwrite`. Tomt datum är idag, Europe/Stockholm. Klockslag rörs inte. `overwrite` är av som standard: en lapp som redan finns den dagen lämnas kvar. Ingen knapp och inget standardmeddelande i integrationen. Automationen skickar texten.
+`custom_components/skola24/` är det Marketplace installerar. En device per barn. Meddelandet är en `text`-entitet: skriver du i den sparas det som dagens lapp i Skola24, och tomt rensar den. Sensorer: ordinarie tider, undantagstider och pågående lektion (hela dagens schema ligger i attributet `timetable`). En diagnostikknapp hämtar nytt direkt. Inget standardmeddelande i integrationen. Automationen skickar texten via `text.set_value`.
 
 ## HASS
 

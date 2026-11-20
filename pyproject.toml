@@ -1,6 +1,6 @@
 [project]
 name = "skola24"
-version = "0.1.2"
+version = "0.2.0"
 description = "Skola24 parent client, Home Assistant integration, and stdio MCP"
 requires-python = ">=3.12"
 dependencies = [

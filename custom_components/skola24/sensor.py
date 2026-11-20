@@ -1,30 +1,31 @@
-"""One device per child. Three sensors: note, ordinary times, exception times."""
+"""One device per child. Sensors: ordinary times, exception times, current lesson."""
 
 from __future__ import annotations
 
 from homeassistant.components.sensor import SensorEntity
-from homeassistant.core import HomeAssistant
+from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity import DeviceInfo
+from homeassistant.helpers.event import async_track_time_change
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.util import dt as dt_util
 
-from .api import ChildDay, ClockSpan
+from .api import ChildDay, ClockSpan, current_lesson
 from .const import DOMAIN
 from .coordinator import Skola24Coordinator
-
-_MAX_STATE = 255
 
 
 async def async_setup_entry(hass: HomeAssistant, entry, async_add_entities) -> None:
     coordinator: Skola24Coordinator = hass.data[DOMAIN][entry.entry_id]
     entities: list[SensorEntity] = []
     for guid, day in coordinator.data.items():
-        entities.append(MessageSensor(coordinator, guid, day.name))
         entities.append(TimesSensor(coordinator, guid, day.name, "ordinary_times"))
         entities.append(TimesSensor(coordinator, guid, day.name, "exception_times"))
+        entities.append(LessonSensor(coordinator, guid, day.name))
+        entities.append(NextLessonSensor(coordinator, guid, day.name))
     async_add_entities(entities)
 
 
-class _ChildSensor(CoordinatorEntity[Skola24Coordinator], SensorEntity):
+class ChildEntity(CoordinatorEntity[Skola24Coordinator]):
     _attr_has_entity_name = True
 
     def __init__(self, coordinator: Skola24Coordinator, guid: str, name: str) -> None:
@@ -51,28 +52,8 @@ class _ChildSensor(CoordinatorEntity[Skola24Coordinator], SensorEntity):
         return self.coordinator.data.get(self._guid)
 
 
-class MessageSensor(_ChildSensor):
-    _attr_translation_key = "message"
-    _attr_icon = "mdi:message-text"
-
-    def __init__(self, coordinator: Skola24Coordinator, guid: str, name: str) -> None:
-        super().__init__(coordinator, guid, name)
-        self._attr_unique_id = f"{guid}_message"
-
-    @property
-    def native_value(self) -> str | None:
-        day = self._day()
-        if day is None or day.message is None:
-            return None
-        if len(day.message) <= _MAX_STATE:
-            return day.message
-        return day.message[: _MAX_STATE - 1] + "…"
-
-    @property
-    def extra_state_attributes(self) -> dict[str, str | None]:
-        """The full note. State is capped at 255 characters."""
-        day = self._day()
-        return {"message": day.message if day else None}
+class _ChildSensor(ChildEntity, SensorEntity):
+    pass
 
 
 class TimesSensor(_ChildSensor):
@@ -98,7 +79,90 @@ class TimesSensor(_ChildSensor):
         return _format_spans(spans)
 
 
-def _format_spans(spans: list[ClockSpan]) -> str | None:
+class LessonSensor(_ChildSensor):
+    """What the week's timetable says is on right now. Empty between lessons."""
+
+    _attr_translation_key = "current_lesson"
+    _attr_icon = "mdi:school"
+
+    def __init__(self, coordinator: Skola24Coordinator, guid: str, name: str) -> None:
+        super().__init__(coordinator, guid, name)
+        self._attr_unique_id = f"{guid}_current_lesson"
+
+    async def async_added_to_hass(self) -> None:
+        await super().async_added_to_hass()
+        self.async_on_remove(
+            async_track_time_change(self.hass, self._tick, second=0)
+        )
+
+    @callback
+    def _tick(self, _now) -> None:
+        self.async_write_ha_state()
+
+    def _now(self):
+        day = self._day()
+        if day is None:
+            return None, None
+        hhmm = dt_util.now(dt_util.get_time_zone("Europe/Stockholm")).strftime("%H:%M")
+        return current_lesson(day.lessons, hhmm)
+
+    @property
+    def native_value(self) -> str | None:
+        if self._day() is None:
+            return None
+        lesson, _ = self._now()
+        return lesson.title if lesson else ""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, object]:
+        lesson, upcoming = self._now()
+        day = self._day()
+        return {
+            "timetable": [
+                {
+                    "start": item.start,
+                    "end": item.end,
+                    "title": item.title,
+                    "details": ", ".join(item.details),
+                }
+                for item in (day.lessons if day else [])
+            ],
+            "details": ", ".join(lesson.details) if lesson else None,
+            "start": lesson.start if lesson else None,
+            "end": lesson.end if lesson else None,
+            "next": upcoming.title if upcoming else None,
+            "next_start": upcoming.start if upcoming else None,
+        }
+
+
+class NextLessonSensor(LessonSensor):
+    """The next lesson today that starts after now. Empty when the day is done."""
+
+    _attr_translation_key = "next_lesson"
+    _attr_icon = "mdi:school-outline"
+
+    def __init__(self, coordinator: Skola24Coordinator, guid: str, name: str) -> None:
+        super().__init__(coordinator, guid, name)
+        self._attr_unique_id = f"{guid}_next_lesson"
+
+    @property
+    def native_value(self) -> str | None:
+        if self._day() is None:
+            return None
+        _, upcoming = self._now()
+        return upcoming.title if upcoming else ""
+
+    @property
+    def extra_state_attributes(self) -> dict[str, str | None]:
+        _, upcoming = self._now()
+        return {
+            "details": ", ".join(upcoming.details) if upcoming else None,
+            "start": upcoming.start if upcoming else None,
+            "end": upcoming.end if upcoming else None,
+        }
+
+
+def _format_spans(spans: list[ClockSpan]) -> str:
     if not spans:
-        return None
+        return ""
     return ", ".join(f"{span.start}-{span.end}" for span in spans)
