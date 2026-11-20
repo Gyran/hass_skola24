@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+# bin/release 0.3.0
+# Bumps the version, runs the tests, commits, tags and pushes. The Release
+# workflow then publishes the GitHub release for the tag.
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+version="${1:-}"
+if ! [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+  echo "usage: bin/release X.Y.Z" >&2
+  exit 1
+fi
+if [ -n "$(git status --porcelain)" ]; then
+  echo "Working tree is not clean. Commit or stash first." >&2
+  exit 1
+fi
+if [ "$(git rev-parse --abbrev-ref HEAD)" != "main" ]; then
+  echo "Release from main." >&2
+  exit 1
+fi
+if git rev-parse -q --verify "refs/tags/$version" >/dev/null; then
+  echo "Tag $version already exists." >&2
+  exit 1
+fi
+
+python3 - "$version" <<'PY'
+import json, re, sys
+version = sys.argv[1]
+
+path = "custom_components/skola24/manifest.json"
+text = open(path).read()
+text = re.sub(r'("version":\s*")[^"]+(")', rf"\g<1>{version}\g<2>", text, count=1)
+json.loads(text)
+open(path, "w").write(text)
+
+for path, pattern in (
+    ("pyproject.toml", r'(?m)^(version = ")[^"]+(")'),
+    ("uv.lock", r'(?ms)(name = "skola24"\nversion = ")[^"]+(")'),
+):
+    text = open(path).read()
+    text = re.sub(pattern, rf"\g<1>{version}\g<2>", text, count=1)
+    open(path, "w").write(text)
+PY
+
+uv run pytest -q
+
+git add custom_components/skola24/manifest.json pyproject.toml uv.lock
+git commit -m "Release $version"
+git tag "$version"
+git push origin main
+git push origin "$version"
+echo "Pushed $version. The Release workflow publishes it on GitHub."

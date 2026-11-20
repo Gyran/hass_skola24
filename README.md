@@ -35,4 +35,12 @@ cp .env.example .env
 uv run pytest
 ```
 
+## Release
+
+```bash
+bin/release 0.3.0
+```
+
+Bumpar versionen i `manifest.json`, `pyproject.toml` och `uv.lock`, kör testerna, committar, taggar och pushar. Workflowen `Release` gör GitHub-releasen av taggen. Det är den ett manuellt tillagt repo installerar från.
+
 <!-- ha-marketplace:exclude-end -->
